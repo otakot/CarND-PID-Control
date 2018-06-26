@@ -16,6 +16,8 @@ double K_D = 5.0;
 // calibrated tau values, based on criteria of minimal mean squared error: [0.245, 0.0008949, 8.74359]
 
 constexpr double MAX_CALIBRATION_STEPS = 2000;
+constexpr double MIN_SPEED = 5.0;
+constexpr double ANTI_ROLLBACK_THROTTLE = 0.1;
 
 // calibration variables
 double delta_tau_tolerance = 0.0;
@@ -194,6 +196,9 @@ int main(int argC, char** argV)
           // means the bigger the steering angle is in both left and right direction in range [0:1],
           // smaller the throttle must be (even lowering to negative value for slight braking).
           double throttle = 0.7 - std::abs(cte)/4 - std::abs(steer_value);
+          if(speed < MIN_SPEED && throttle < 0) {
+            throttle = ANTI_ROLLBACK_THROTTLE;
+          }
           msgJson["throttle"] = throttle;
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
           //std::cout << msg << std::endl;
